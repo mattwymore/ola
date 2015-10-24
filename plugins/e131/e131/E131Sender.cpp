@@ -47,6 +47,7 @@ E131Sender::E131Sender(ola::network::UDPSocket *socket,
       m_root_sender(root_sender) {
   if (!m_root_sender)
     OLA_WARN << "root_sender is null, this won't work";
+
 }
 
 
@@ -101,11 +102,37 @@ bool E131Sender::SendDiscoveryData(const E131Header &header,
  * @return true if this is a valid E1.31 universe, false otherwise
  */
 bool E131Sender::UniverseIP(unsigned int universe, IPV4Address *addr) {
+/*
   *addr = IPV4Address(
       HostToNetwork(239U << 24 |
                     255U << 16 |
                     (universe & 0xFF00) |
                     (universe & 0xFF)));
+                    */
+                    /*
+  *addr = IPV4Address(
+      HostToNetwork(192U << 24 |
+                    168U << 16 |
+                    1U << 8 |
+                    75U << 0));
+                    */
+
+    //Compute destination addresses based on universe number.
+    //TODO: We should be a little smarter about this...
+    uint32_t finalAddress = 70;
+    for (uint32_t i = 33; i < 257; i += 32)
+    {
+        if (universe < i)
+        {
+            break;
+        }
+        else
+        {
+            ++finalAddress;
+        }
+    }
+  uint32_t address = 192U << 24 | 168U << 16 | 1U << 8 | finalAddress << 0;
+  *addr = IPV4Address(HostToNetwork(address));
   if (universe && (universe & 0xFFFF) != 0xFFFF)
     return true;
 
